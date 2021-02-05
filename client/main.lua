@@ -213,7 +213,7 @@ Citizen.CreateThread(function()
 		
 		if IsControlJustReleased(1, 163) then
 			print('triggered')
-			if group ~= "user" and group ~= "mod" then
+			if group ~= "user" then
 				TriggerEvent('esx_spectate:spectate')
 			end
 		end
