@@ -1,10 +1,7 @@
 ESX = nil
 
-Citizen.CreateThread(function()
-	while ESX == nil do
-	TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-	Wait(0)
-	end
+CreateThread(function()
+    while ESX == nil do TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end) Wait(0) end
 end)
 
 local InSpectatorMode	= false
@@ -36,10 +33,10 @@ function spectate(target)
 
 	ESX.TriggerServerCallback('esx:getPlayerData', function(player)
 		if not InSpectatorMode then
-			LastPosition = GetEntityCoords(GetPlayerPed(-1))
+			LastPosition = GetEntityCoords(PlayerPedId())
 		end
 
-		local playerPed = GetPlayerPed(-1)
+		local playerPed = PlayerPedId()
 
 		SetEntityCollision(playerPed, false, false)
 		SetEntityVisible(playerPed, false)
@@ -72,11 +69,9 @@ end
 function resetNormalCamera()
 	InSpectatorMode = false
 	TargetSpectate  = nil
-	local playerPed = GetPlayerPed(-1)
-
+	local playerPed = PlayerPedId()
 	SetCamActive(cam,  false)
 	RenderScriptCams(false, false, 0, true, true)
-
 	SetEntityCollision(playerPed, true, true)
 	SetEntityVisible(playerPed, true)
 	SetEntityCoords(playerPed, LastPosition.x, LastPosition.y, LastPosition.z)
@@ -99,20 +94,17 @@ function getPlayersList()
 end
 
 function OpenAdminActionMenu(player)
-
     ESX.TriggerServerCallback('esx_spectate:getOtherPlayerData', function(data)
-
-      print(json.encode(data))
       local jobLabel    = nil
       local sexLabel    = nil
       local sex         = nil
       local dobLabel    = nil
       local heightLabel = nil
       local idLabel     = nil
-	  local Money		= 0
-	  local Bank		= 0
-	  local blackMoney	= 0
-	  local Inventory	= nil
+      local Money	= 0
+      local Bank	= 0
+      local blackMoney  = 0
+      local Inventory   = nil
 	  
     for k,v in pairs(data.accounts) do
         if v.name == 'black_money' then
@@ -221,7 +213,7 @@ Citizen.CreateThread(function()
 		
 		if IsControlJustReleased(1, 163) then
 			print('triggered')
-			if group ~= "user" then
+			if group ~= "user" and group ~= "mod" then
 				TriggerEvent('esx_spectate:spectate')
 			end
 		end
@@ -230,13 +222,12 @@ end)
 
 RegisterNetEvent('es_admin:setGroup')
 AddEventHandler('es_admin:setGroup', function(g)
-	print('group setted ' .. g)
 	group = g
 end)
 
 RegisterNetEvent('esx_spectate:spectate')
 AddEventHandler('esx_spectate:spectate', function()
-
+        if group ~= "user" and group ~= "mod" then
 	SetNuiFocus(true, true)
 
 	SendNUIMessage({
@@ -244,17 +235,15 @@ AddEventHandler('esx_spectate:spectate', function()
 		data = getPlayersList(),
 		player = GetPlayerServerId(PlayerId())
 	})
-
+     end
 end)
 
 RegisterNUICallback('select', function(data, cb)
-	print("select UI " .. json.encode(data))
 	spectate(data.id)
 	SetNuiFocus(false)
 end)
 
 RegisterNUICallback('close', function(data, cb)
-	print("closing UI")
 	SetNuiFocus(false)
 end)
 
